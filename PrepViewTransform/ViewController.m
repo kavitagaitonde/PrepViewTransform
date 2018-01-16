@@ -13,7 +13,8 @@
 @end
 
 BOOL isDragging = NO;
-CGPoint prevLocation;
+CGFloat prevX;
+CGFloat prevY;
 UIView *object;
 UIView *box;
 
@@ -28,6 +29,8 @@ UIView *box;
     object.userInteractionEnabled = YES;
     object.tag = 100;
     [self.view addSubview:object];
+    UIPanGestureRecognizer *panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePanGesture:)];
+    [object addGestureRecognizer:panGesture];
     
     CGRect rect2 = CGRectMake(10, 10, 100 , 100);
     box = [[UIView alloc] initWithFrame:rect2];
@@ -36,6 +39,29 @@ UIView *box;
     [self.view addSubview:box];
 }
 
+- (void) handlePanGesture:(id)sender {
+    CGPoint location = [(UIPanGestureRecognizer*)sender translationInView:self.view];
+    if ([(UIPanGestureRecognizer*)sender state] == UIGestureRecognizerStateBegan) {
+        prevX = [sender view].center.x;
+        prevY = [sender view].center.y;
+    } else if ([(UIPanGestureRecognizer*)sender state] == UIGestureRecognizerStateChanged) {
+        CGPoint newLocation = CGPointMake(prevX+location.x, prevY+location.y);
+        [sender view].center = newLocation;
+         [self.view bringSubviewToFront:object];
+    } else if ([(UIPanGestureRecognizer*)sender state] == UIGestureRecognizerStateEnded) {
+        CGPoint endLocation = [sender locationInView:self.view];
+        if (CGRectContainsPoint(box.frame, endLocation)) {
+            NSLog(@"Inside the box");
+            [self.view bringSubviewToFront:object];
+        } else {
+            NSLog(@"NOT Inside the box");
+            CGPoint newLocation = CGPointMake(prevX, prevY);
+            object.center = newLocation;
+            
+        }
+    }
+    
+}
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
@@ -43,7 +69,7 @@ UIView *box;
 }
 
 
-- (void) touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
+/*- (void) touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
     NSLog(@"touchesBegan");
     UITouch *touch = [touches anyObject];
     CGPoint touchLocation = [touch locationInView:self.view];
@@ -63,6 +89,7 @@ UIView *box;
 - (void) touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
     NSLog(@"touchesEnded");
     UITouch *touch = [touches anyObject];
+    isDragging = NO;
     CGPoint touchLocation = [touch locationInView:self.view];
     if (CGRectContainsPoint(box.frame, touchLocation)) {
         NSLog(@"Inside the box");
@@ -71,6 +98,6 @@ UIView *box;
         object.center = prevLocation;
         [self.view bringSubviewToFront:object];
     }
-}
+}*/
 
 @end
